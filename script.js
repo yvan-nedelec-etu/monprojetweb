@@ -57,7 +57,7 @@ function isShaking(el) {
  * Toggle shake class on element with given id.
  * Updates the provided button text to reflect the new state.
  * @param {string} id - id of the element to toggle
- * @param {HTMLButtonElement} btn - button to update label
+ * @param {HTMLButtonElement} btn - button to update labelggggg
  */
 function toggleShakeById(id, btn) {
     const el = document.getElementById(id);

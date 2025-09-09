@@ -44,15 +44,15 @@ caption {
     animation-iteration-count: infinite;
 }
 @keyframes shake {
-    0% { transform: translate(1px, 1px) rotate(0deg); }
-    10% { transform: translate(-1px, -2px) rotate(-1deg); }
-    20% { transform: translate(-3px, 0px) rotate(1deg); }
-    30% { transform: translate(3px, 2px) rotate(0deg); }
-    40% { transform: translate(1px, -1px) rotate(1deg); }
-    50% { transform: translate(-1px, 2px) rotate(-1deg); }
-    60% { transform: translate(-3px, 1px) rotate(0deg); }
-    70% { transform: translate(3px, 1px) rotate(-1deg); }
-    80% { transform: translate(-1px, -1px) rotate(1deg); }
-    90% { transform: translate(1px, 2px) rotate(0deg); }
-    100% { transform: translate(1px, -2px) rotate(-1deg); }
+    0% { transform: rotate(0deg) translate(0, 0) scale(1); }
+    10% { transform: rotate(720deg) translate(30px, -20px) scale(1.3); }
+    20% { transform: rotate(-1080deg) translate(-40px, 40px) scale(0.8); }
+    30% { transform: rotate(1440deg) translate(50px, -50px) scale(1.5); }
+    40% { transform: rotate(-720deg) translate(-30px, 30px) scale(1.1); }
+    50% { transform: rotate(1080deg) translate(40px, -40px) scale(0.9); }
+    60% { transform: rotate(-1440deg) translate(-50px, 50px) scale(1.4); }
+    70% { transform: rotate(720deg) translate(30px, -30px) scale(1); }
+    80% { transform: rotate(-1080deg) translate(-40px, 40px) scale(1.3); }
+    90% { transform: rotate(1440deg) translate(50px, -50px) scale(0.7); }
+    100% { transform: rotate(0deg) translate(0, 0) scale(1); }
 }
