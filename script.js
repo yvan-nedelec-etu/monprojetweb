@@ -1,133 +1,144 @@
-console.log('Hello world from script.js');
+document.addEventListener('DOMContentLoaded', () => {
+  const $ = (s, ctx = document) => ctx.querySelector(s);
+  const createEl = (tag, attrs = {}) => {
+    const el = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) {
+      if (k === 'text') el.textContent = v;
+      else if (k === 'html') el.innerHTML = v;
+      else if (k === 'after' && v instanceof Element) v.insertAdjacentElement('afterend', el);
+      else el.setAttribute(k, v);
+    }
+    return el;
+  };
 
-/* DOM initial setup */
-const h1 = document.querySelector('h1');
-h1.textContent += ' from JS';
-h1.style.color = 'purple';
+  // Header + clock
+  const h1 = $('h1');
+  if (h1) { h1.textContent = h1.textContent + ' from JS'; h1.style.color = 'purple'; }
+  const h2 = createEl('h2', { text: 'Welcome to the DOM' });
+  h1?.insertAdjacentElement('afterend', h2);
+  const h3 = createEl('h3'); h2.insertAdjacentElement('afterend', h3);
+  const startClock = () => {
+    const update = () => { h3.textContent = 'Heure actuelle : ' + new Date().toLocaleTimeString(); };
+    update(); setInterval(update, 1000);
+  };
+  startClock();
 
-const h2 = document.createElement('h2');
-h2.textContent = 'Welcome to the DOM';
-h1.insertAdjacentElement('afterend', h2);
+  // Example list
+  const ul = createEl('ul', { id: 'my-list' });
+  ul.append(createEl('li', { text: 'Élément 1' }));
+  ul.append(createEl('li', { text: 'Élément 2' }));
+  h3.insertAdjacentElement('afterend', ul);
+  if (ul.firstElementChild) ul.removeChild(ul.firstElementChild);
+  ul.append(createEl('li', { text: 'Élément ajouté en JS' }));
 
-/* Horloge */
-const h3 = document.createElement('h3');
-h2.insertAdjacentElement('afterend', h3);
-function updateTime() {
-    const now = new Date();
-    h3.textContent = 'Heure actuelle : ' + now.toLocaleTimeString();
-}
-setInterval(updateTime, 1000);
-updateTime();
+  const img = $('#main-image');
 
-/* Liste d'exemple */
-const ul = document.createElement('ul');
-ul.id = 'my-list';
-const li1 = document.createElement('li'); li1.textContent = 'Élément 1'; ul.appendChild(li1);
-const li2 = document.createElement('li'); li2.textContent = 'Élément 2'; ul.appendChild(li2);
-h3.insertAdjacentElement('afterend', ul);
-ul.removeChild(li1);
-const li3 = document.createElement('li'); li3.textContent = 'Élément ajouté en JS'; ul.appendChild(li3);
-
-/* Image */
-const img = document.getElementById('main-image');
-
-/* --- TABLE CREATION --- */
-function createTableElement() {
-    const tbl = document.createElement('table');
-    tbl.id = 'table-users';
-    const caption = document.createElement('caption');
-    caption.textContent = 'People';
-    const thead = document.createElement('thead');
-    thead.innerHTML = '<tr><th>Name</th><th>User name</th><th>Email</th></tr>';
-    const tbody = document.createElement('tbody');
-    tbl.append(caption, thead, tbody);
-    const ref = document.getElementById('btn-toggle-img') || document.getElementById('btn-toggle-img') || img;
+  // Table creation
+  function ensureTable() {
+    let tbl = $('#table-users');
+    if (tbl) return tbl;
+    tbl = createEl('table', { id: 'table-users' });
+    tbl.append(createEl('caption', { text: 'People' }));
+    tbl.append(createEl('thead', { html: '<tr><th>Name</th><th>User name</th><th>Email</th></tr>' }));
+    tbl.append(createEl('tbody'));
+    const ref = img || h3 || document.body;
     ref.insertAdjacentElement('afterend', tbl);
     return tbl;
-}
+  }
+  const table = ensureTable();
+  const tbody = table.querySelector('tbody');
 
-let table = document.getElementById('table-users') || createTableElement();
+  // Utilities
+  const escapeHtml = s => String(s ?? '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
-/* --- TOGGLE SHAKE --- */
-function isShaking(el) {
-    return el && el.classList.contains('shake');
-}
+  const isShaking = el => !!el && el.classList.contains('shake');
+  const labelFor = id => id === 'main-image' ? 'Image' : (id === 'table-users' ? 'Table' : id);
 
-/**
- * Toggle shake class on element with given id.
- * Updates the provided button text to reflect the new state.
- * @param {string} id - id of the element to toggle
- * @param {HTMLButtonElement} btn - button to update labelggggg
- */
-function toggleShakeById(id, btn) {
+  function setToggleLabel(btn, id) {
+    btn.textContent = isShaking(document.getElementById(id)) ? `Unshake ${labelFor(id)}` : `Shake ${labelFor(id)}`;
+  }
+
+  function toggleShakeById(id, btn) {
     const el = document.getElementById(id);
-    if (!el) {
-        console.warn(`Element with id="${id}" not found`);
-        return;
-    }
+    if (!el) { console.warn(`Element with id="${id}" not found`); return; }
     const willShake = !isShaking(el);
     el.classList.toggle('shake', willShake);
-    btn.textContent = willShake ? getUnshakeLabelFor(id) : getShakeLabelFor(id);
-}
+    setToggleLabel(btn, id);
+  }
 
-function getShakeLabelFor(id) {
-    return id === 'main-image' ? 'Shake Image' : 'Shake Table';
-}
-function getUnshakeLabelFor(id) {
-    return id === 'main-image' ? 'Unshake Image' : 'Unshake Table';
-}
+  function makeToggleButton(targetId) {
+    const btn = createEl('button', { id: `btn-toggle-${targetId}` });
+    setToggleLabel(btn, targetId);
+    const refEl = document.getElementById(targetId) || table;
+    refEl.insertAdjacentElement('afterend', btn);
+    btn.addEventListener('click', () => toggleShakeById(targetId, btn));
+    return btn;
+  }
 
-/* Create single toggle buttons (image and table) */
-const btnToggleImg = document.createElement('button');
-btnToggleImg.id = 'btn-toggle-img';
-btnToggleImg.textContent = isShaking(img) ? getUnshakeLabelFor('main-image') : getShakeLabelFor('main-image');
-img.insertAdjacentElement('afterend', btnToggleImg);
+  const btnToggleImg = img ? makeToggleButton('main-image') : null;
+  const btnToggleTable = makeToggleButton('table-users');
 
-const btnToggleTable = document.createElement('button');
-btnToggleTable.id = 'btn-toggle-table';
-btnToggleTable.textContent = isShaking(table) ? getUnshakeLabelFor('table-users') : getShakeLabelFor('table-users');
-table.insertAdjacentElement('afterend', btnToggleTable);
-
-/* Attach handlers */
-btnToggleImg.addEventListener('click', () => toggleShakeById('main-image', btnToggleImg));
-btnToggleTable.addEventListener('click', () => toggleShakeById('table-users', btnToggleTable));
-
-/* --- FETCH USERS + gestion des erreurs / cas vide --- */
-function escapeHtml(str) {
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
-}
-
-async function loadUsers() {
-    const tbody = table.querySelector('tbody');
-    tbody.innerHTML = '<tr><td colspan="3">Chargement...</td></tr>';
+  // Fetch with timeout and rendering
+  async function fetchJsonWithTimeout(url, ms = 8000) {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), ms);
     try {
-        const res = await fetch('https://jsonplaceholder.typicode.com/users');
-        if (!res.ok) {
-            // gestion des erreurs HTTP explicite
-            tbody.innerHTML = `<tr><td colspan="3">Erreur lors de la récupération : HTTP ${res.status}</td></tr>`;
-            console.error(`Fetch failed: HTTP ${res.status}`);
-            return;
-        }
-        const users = await res.json();
-        if (!Array.isArray(users) || users.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="3">Aucun utilisateur trouvé.</td></tr>`;
-            return;
-        }
-        tbody.innerHTML = ''; // reset
-        users.forEach(u => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${escapeHtml(u.name)}</td><td>${escapeHtml(u.username)}</td><td>${escapeHtml(u.email)}</td>`;
-            tbody.appendChild(tr);
-        });
+      const res = await fetch(url, { signal: controller.signal });
+      clearTimeout(id);
+      return res;
     } catch (err) {
-        console.error('Erreur lors du chargement des utilisateurs :', err);
-        tbody.innerHTML = `<tr><td colspan="3">Impossible de charger les utilisateurs. Vérifiez votre connexion.</td></tr>`;
+      clearTimeout(id);
+      throw err;
     }
-}
+  }
 
-loadUsers();
+  function setTbodyMessage(msg) {
+    tbody.innerHTML = '';
+    const tr = createEl('tr');
+    const td = createEl('td', { text: msg });
+    td.setAttribute('colspan', '3');
+    tr.appendChild(td);
+    tbody.appendChild(tr);
+  }
+
+  function renderUsers(users) {
+    tbody.innerHTML = '';
+    for (const u of users) {
+      const tr = createEl('tr');
+      const td1 = createEl('td', { text: escapeHtml(u.name) });
+      const td2 = createEl('td', { text: escapeHtml(u.username) });
+      const td3 = createEl('td', { text: escapeHtml(u.email) });
+      tr.append(td1, td2, td3);
+      tbody.appendChild(tr);
+    }
+  }
+
+  async function loadUsers() {
+    setTbodyMessage('Chargement...');
+    try {
+      const res = await fetchJsonWithTimeout('https://jsonplaceholder.typicode.com/users', 8000);
+      if (!res.ok) {
+        setTbodyMessage(`Erreur lors de la récupération : HTTP ${res.status}`);
+        console.error(`Fetch failed: HTTP ${res.status}`);
+        return;
+      }
+      const users = await res.json();
+      if (!Array.isArray(users) || users.length === 0) {
+        setTbodyMessage('Aucun utilisateur trouvé.');
+        return;
+      }
+      renderUsers(users);
+    } catch (err) {
+      console.error('Erreur lors du chargement des utilisateurs :', err);
+      if (err.name === 'AbortError') setTbodyMessage('Temps de connexion dépassé.');
+      else setTbodyMessage('Impossible de charger les utilisateurs. Vérifiez votre connexion.');
+    }
+  }
+
+  loadUsers();
+
+  // Optional: refresh on caption double click
+  table.querySelector('caption')?.addEventListener('dblclick', loadUsers);
+});
